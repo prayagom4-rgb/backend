@@ -1,18 +1,16 @@
-import User from "../models/user.models.js";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer';
+import { MESSAGE } from "../helpers/message.helper.js";
 import responseHelper from "../helpers/response.helper.js";
 import hashPassword from "../middleware/hashPassword.js";
-import { MESSAGE } from "../helpers/message.helper.js";
-import generateOtp from "../utils/generateOtp.js";
-import Fast2SendOtp from "../utils/Fast2SendOtp.js";
-import validateFields from "../middleware/validateFields.js";
-import watchList from "../models/watchList.models.js";
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
 import introModels from "../models/intro.models.js";
-import userPaymentModels from "../models/userPayment.models.js";
 import paymentInfoModels from "../models/paymentInfo.models.js";
+import User from "../models/user.models.js";
+import userPaymentModels from "../models/userPayment.models.js";
+import watchList from "../models/watchList.models.js";
 import oAuth2Client from "../services/oauthClient.js";
+import generateOtp from "../utils/generateOtp.js";
+import createOAuthClient from "../services/oauthClient.js";
 const { send200, send403, send400, send401, send404, send500 } = responseHelper;
 
 const register = async (req, res) => {
@@ -68,37 +66,156 @@ const validateEmail = (email) => {
 const CLIENT_ID =
   "497105170769-jovr105n48s95l213oq6n470el356ml1.apps.googleusercontent.com";
 const CLIENT_SECRET = "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";
-const REDIRECT_URI = "https://developers.google.com/oauthplayground";
-const REFRESH_TOKEN =
-  "1//04eIzv6PqTShGCgYIARAAGAQSNwF-L9Ir0eaxPm7AJaksRGRlnPNdZF7QdJZveHyicF0kEaqhVmQONsbvMOjWychuhXIf2qaPZTw";
+// const REDIRECT_URI = "https://developers.google.com/oauthplayground";
+const REFRESH_TOKEN = "1//04NJXM8LlFUumCgYIARAAGAQSNwF-L9IrXxw1oYSSyDP-_RqJ0sJsKvbIOAXZ6RGE3WwmxqTO6BxlDHHWu2GiAAc3J4Tb4wxC_bo";
+// const REFRESH_TOKEN =
+//   "1//04eIzv6PqTShGCgYIARAAGAQSNwF-L9Ir0eaxPm7AJaksRGRlnPNdZF7QdJZveHyicF0kEaqhVmQONsbvMOjWychuhXIf2qaPZTw";
+
+// 4/0AVGzR1C5nOyzs4cRRkYcTn8W65kXmwIH0iGf09yqwv9d5MDj9vRf5UP0E79ZbMeKX7Fs_w
+// const sendOtp = async (req, res) => {
+//   const { email, userId, name } = req.body;
+
+//   try {
+//     const newOtp = generateOtp(4);
+//     await User.findOneAndUpdate(
+//       { _id: userId },
+//       { $set: { otp: newOtp, email } }
+//     );
+//     const { token: accessToken } = await oAuth2Client.getAccessToken();
+
+//     const transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       auth: {
+//         type: 'OAuth2',
+//         user: 'eyalokmani@gmail.com',
+//         clientId: CLIENT_ID,
+//         clientSecret: CLIENT_SECRET,
+//         refreshToken: REFRESH_TOKEN,
+//         accessToken: accessToken,
+//       },
+//     });
+
+//     const mailOptions = {
+//       from: 'eyalokmani@gmail.com',
+//       to: email,
+//       subject: 'Your OTP for Tradex Pro',
+//       html: `
+// <html>
+// <head>
+//     <meta charset="UTF-8">
+//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//     <title>OTP Verification</title>
+//     <style>
+//         body {
+//             font-family: Arial, sans-serif;
+//             background-color: #f4f4f4;
+//             margin: 0;
+//             padding: 20px;
+//         }
+//         .container {
+//             max-width: 600px;
+//             margin: auto;
+//             background: #ffffff;
+//             padding: 20px;
+//             border-radius: 5px;
+//             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+//         }
+//         h1 {
+//             font-size: 24px;
+//             color: #333;
+//         }
+//         p {
+//             font-size: 16px;
+//             color: #555;
+//         }
+//         .otp-code {
+//             font-size: 24px;
+//             font-weight: bold;
+//             color: #007BFF;
+//         }
+//         .footer {
+//             margin-top: 20px;
+//             font-size: 14px;
+//             color: #777;
+//         }
+//     </style>
+// </head>
+// <body>
+//     <div class="container">
+//         <h1>Hi ${name ? name : 'User'},</h1>
+//         <p>Your OTP code is:</p>
+//         <p class="otp-code">${newOtp}</p>
+//         <p>Please enter this code to verify your identity.</p>
+//         <div class="footer">
+//             <p>Thank you for using our service!</p>
+//         </div>
+//     </div>
+// </body>
+// </html>
+//       `,
+//     };
+
+//     // Send email
+//     transporter.sendMail(mailOptions, (error, info) => {
+//       if (error) {
+//         console.log('Error sending email:', error);
+//         return send400(res, { status: false, message: error.message });
+//       } else {
+//         console.log('Email sent:', info);
+//         return send200(res, { status: true, message: MESSAGE.OTP_SENT });
+//       }
+//     });
+//   } catch (error) {
+//     console.log('Error:', error);
+//     return send400(res, { status: false, message: error.message });
+//   }
+// };
+
+
+// import nodemailer from "nodemailer";
+// import createOAuthClient from "./oauthClient.js";
+// import User from "../models/User.js"; // Adjust path as needed
+// import { generateOtp } from "../utils/otp.js"; // Your OTP generator
+// import { send200, send400 } from "../utils/response.js"; // Your response helpers
+// import { MESSAGE } from "../constants/message.js"; // Your constant messages
+
+// const CLIENT_ID = "497105170769-jovr105n48s95l213oq6n470el356ml1.apps.googleusercontent.com";
+// const CLIENT_SECRET = "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";
+// const REDIRECT_URI = "https://developers.google.com/oauthplayground";
+
+// // Pass your refresh token here manually
+// const REFRESH_TOKEN = "YOUR_REFRESH_TOKEN_HERE"; // 👈 Replace with the token you generated
+
+
+// ✅ Gmail App Password credentials
+const GMAIL_USER = "stoxuptrader@gmail.com";       // Your Gmail address
+const GMAIL_APP_PASSWORD = "xkxeagimhmxwqufv";  // Your 16-character App Password (no spaces)
 
 const sendOtp = async (req, res) => {
   const { email, userId, name } = req.body;
 
   try {
+    // 1️⃣ Generate OTP and save to user
     const newOtp = generateOtp(4);
     await User.findOneAndUpdate(
       { _id: userId },
       { $set: { otp: newOtp, email } }
     );
-    const { token: accessToken } = await oAuth2Client.getAccessToken();
 
+    // 2️⃣ Configure transporter (simple Gmail + App Password)
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        type: 'OAuth2',
-        user: 'eyalokmani@gmail.com',
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET,
-        refreshToken: REFRESH_TOKEN,
-        accessToken: accessToken,
+        user: GMAIL_USER,
+        pass: GMAIL_APP_PASSWORD,
       },
     });
 
+    // 3️⃣ Email Template
     const mailOptions = {
-      from: 'eyalokmani@gmail.com',
+      from: GMAIL_USER,
       to: email,
-      subject: 'Your OTP for Tradex Pro',
+      subject: "Your OTP for Tradex Pro",
       html: `
 <html>
 <head>
@@ -142,7 +259,7 @@ const sendOtp = async (req, res) => {
 </head>
 <body>
     <div class="container">
-        <h1>Hi ${name ? name : 'User'},</h1>
+        <h1>Hi ${name ? name : "User"},</h1>
         <p>Your OTP code is:</p>
         <p class="otp-code">${newOtp}</p>
         <p>Please enter this code to verify your identity.</p>
@@ -155,21 +272,25 @@ const sendOtp = async (req, res) => {
       `,
     };
 
-    // Send email
+    // 4️⃣ Send Email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.log('Error sending email:', error);
+        console.log("Error sending email:", error);
         return send400(res, { status: false, message: error.message });
       } else {
-        console.log('Email sent:', info);
-        return send200(res, { status: true, message: MESSAGE.OTP_SENT });
+        console.log("Email sent:", info.response);
+        return send200(res, {
+          status: true,
+          message: MESSAGE?.OTP_SENT || "OTP sent successfully",
+        });
       }
     });
   } catch (error) {
-    console.log('Error:', error);
+    console.log("Error:", error);
     return send400(res, { status: false, message: error.message });
   }
 };
+
 
 
 // const sendOtp = async (req, res) => {
