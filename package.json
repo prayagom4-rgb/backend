@@ -31,6 +31,7 @@
     "googleapis": "^140.0.1",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
+    "mailersend": "^2.6.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
     "mongoose": "^6.5.2",
