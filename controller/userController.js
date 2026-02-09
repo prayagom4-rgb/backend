@@ -201,13 +201,31 @@ const sendOtp = async (req, res) => {
     );
 
     // 2️⃣ Configure transporter (simple Gmail + App Password)
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: GMAIL_USER,
+    //     pass: GMAIL_APP_PASSWORD,
+    //   },
+    // });
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // IMPORTANT
       auth: {
         user: GMAIL_USER,
         pass: GMAIL_APP_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+      socketTimeout: 20000,
     });
+
+
 
     // 3️⃣ Email Template
     const mailOptions = {
@@ -606,7 +624,7 @@ const acceptRequest = async (req, res) => {
       payment.status = "ACCEPTED";
       await user.save();
       await payment.save();
-      
+
     } else if (action === "REJECT") {
       // await payment.remove();
       payment.status = "REJECTED";
