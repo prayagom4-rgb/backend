@@ -654,29 +654,58 @@ const getPaymentRequests = async (req, res) => {
 };
 
 // Add/Update Payment Information API
+// const addOrUpdatePaymentInfo = async (req, res) => {
+//   const { QRImage, currency, UPIId } = req.body;
+
+//   try {
+//     let paymentInfo = await paymentInfoModels.findOne(); // We expect only one record
+
+//     if (paymentInfo) {
+//       // Update existing payment information
+//       paymentInfo.QRImage = QRImage;
+//       paymentInfo.currency = currency;
+//       paymentInfo.UPIId = UPIId;
+//     } else {
+//       // Create new payment information
+//       paymentInfo = new paymentInfoModels({ QRImage, currency, UPIId });
+//     }
+
+//     await paymentInfo.save();
+
+//     return send200(res, { status: true, message: 'Payment information saved successfully', data: paymentInfo });
+//   } catch (error) {
+//     return send500(res, { status: false, message: error.message });
+//   }
+// };
+
 const addOrUpdatePaymentInfo = async (req, res) => {
-  const { QRImage, currency, UPIId } = req.body;
+  const { paymentDetails } = req.body;
+
+  const { QRImage, currency, UPIId } = paymentDetails || {};
 
   try {
-    let paymentInfo = await paymentInfoModels.findOne(); // We expect only one record
+    let paymentInfo = await paymentInfoModels.findOne();
 
     if (paymentInfo) {
-      // Update existing payment information
       paymentInfo.QRImage = QRImage;
       paymentInfo.currency = currency;
       paymentInfo.UPIId = UPIId;
     } else {
-      // Create new payment information
       paymentInfo = new paymentInfoModels({ QRImage, currency, UPIId });
     }
 
     await paymentInfo.save();
 
-    return send200(res, { status: true, message: 'Payment information saved successfully', data: paymentInfo });
+    return send200(res, {
+      status: true,
+      message: "Payment information saved successfully",
+      data: paymentInfo,
+    });
   } catch (error) {
     return send500(res, { status: false, message: error.message });
   }
 };
+
 
 
 // Get Payment Information API
