@@ -8,9 +8,7 @@ import paymentInfoModels from "../models/paymentInfo.models.js";
 import User from "../models/user.models.js";
 import userPaymentModels from "../models/userPayment.models.js";
 import watchList from "../models/watchList.models.js";
-import oAuth2Client from "../services/oauthClient.js";
 import generateOtp from "../utils/generateOtp.js";
-import createOAuthClient from "../services/oauthClient.js";
 const { send200, send403, send400, send401, send404, send500 } = responseHelper;
 
 const register = async (req, res) => {
